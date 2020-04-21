@@ -9,3 +9,5 @@
 winpkg/target
 .DS_Store
 .idea
+/plugin-ozone/target/
+/ranger-ozone-plugin-shim/target/
