@@ -9,4 +9,15 @@ cd WEB-INF/classes
 cp -r ${DEV_PATH}/src/main/resources/conf ./
 
 
+#-XX:MetaspaceSize=100m
+#-XX:MaxMetaspaceSize=200m
+#-Xmx1g
+#-Xms1g
+#-Xloggc:./logs/gc-worker.log
+#-verbose:gc
+#-XX:+PrintGCDetails
+#-Dproc_rangeradmin
+#-Dservername=rangeradmin
+#-Dlogdir=./logs
+
 
