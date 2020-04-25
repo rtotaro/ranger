@@ -11,3 +11,7 @@ winpkg/target
 .idea
 /plugin-ozone/target/
 /ranger-ozone-plugin-shim/target/
+/dev-startup/logs/
+/dev-startup/target/
+/dev-startup/tomcat.6080/webapp/
+/dev-startup/tomcat.6080/work/Tomcat/localhost/_/org/apache/jsp/
