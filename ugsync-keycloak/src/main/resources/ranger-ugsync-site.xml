@@ -111,7 +111,7 @@
 	</property>
 	<property>
 		<name>ranger.usersync.policymanager.baseURL</name>
-		<value></value>
+		<value>http://localhost:6080</value>
 	</property>
 	<property>
 		<name>ranger.usersync.policymanager.maxrecordsperapicall</name>

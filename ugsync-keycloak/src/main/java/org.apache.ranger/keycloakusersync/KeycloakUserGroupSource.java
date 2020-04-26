@@ -6,9 +6,12 @@ import org.apache.ranger.usergroupsync.UserGroupSink;
 import org.apache.ranger.usergroupsync.UserGroupSource;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.RealmResource;
+import org.keycloak.admin.client.resource.UserResource;
+import org.keycloak.representations.idm.GroupRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class KeycloakUserGroupSource implements UserGroupSource {
 
@@ -54,7 +57,8 @@ public class KeycloakUserGroupSource implements UserGroupSource {
         List<UserRepresentation> users = realm.users().list();
         users.stream().forEach(userRepresentation -> {
             try {
-                sink.addOrUpdateUser(userRepresentation.getId(),userRepresentation.getGroups());
+                List<GroupRepresentation> userGroups = realm.users().get(userRepresentation.getId()).groups();
+                sink.addOrUpdateUser(userRepresentation.getUsername(), userGroups.stream().map(groupRepresentation -> groupRepresentation.getName()).collect(Collectors.toList()));
             } catch (Throwable throwable) {
                 throw new RuntimeException(throwable);
             }
