@@ -18,6 +18,7 @@
  */
 package org.apache.ranger.authorization.presto.authorizer;
 
+import com.google.common.collect.Sets;
 import io.prestosql.spi.connector.CatalogSchemaName;
 import io.prestosql.spi.connector.CatalogSchemaTableName;
 import io.prestosql.spi.connector.ColumnMetadata;
@@ -29,6 +30,8 @@ import io.prestosql.spi.security.SystemAccessControl;
 import io.prestosql.spi.security.SystemSecurityContext;
 import io.prestosql.spi.security.ViewExpression;
 import io.prestosql.spi.type.Type;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.SetUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -53,6 +56,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static java.util.Locale.ENGLISH;
 
@@ -546,7 +550,8 @@ public class RangerSystemAccessControl
 
   @Override
   public void checkCanSelectFromColumns(SystemSecurityContext context, CatalogSchemaTableName table, Set<String> columns) {
-    for (RangerPrestoResource res : createResource(table, columns)) {
+      Set<String> filteredColumns = columns.stream().filter(column -> hasPermission(createResource(table, column), context, PrestoAccessType.SELECT)).collect(Collectors.toSet());
+      for (RangerPrestoResource res : createResource(table, filteredColumns)) {
       if (!hasPermission(res, context, PrestoAccessType.SELECT)) {
         LOG.debug("==> RangerSystemAccessControl.checkCanSelectFromColumns(" + table.getSchemaTableName().getTableName() + ") denied");
         AccessDeniedException.denySelectColumns(table.getSchemaTableName().getTableName(), columns);
@@ -559,7 +564,7 @@ public class RangerSystemAccessControl
    */
   @Override
   public List<ColumnMetadata> filterColumns(SystemSecurityContext context, CatalogSchemaTableName table, List<ColumnMetadata> columns) {
-    return columns;
+        return columns.stream().filter(columnMetadata -> hasPermission(createResource(table, columnMetadata.getName()), context, PrestoAccessType.SELECT)).collect(Collectors.toList());
   }
 
   /** QUERY **/
@@ -684,6 +689,13 @@ public class RangerSystemAccessControl
   private static RangerPrestoResource createResource(String catalogName, String schemaName, final String tableName, final Optional<String> column) {
     return new RangerPrestoResource(catalogName, Optional.of(schemaName), Optional.of(tableName), column);
   }
+
+    private static RangerPrestoResource createResource(CatalogSchemaTableName table, String columnName) {
+        RangerPrestoResource rangerPrestoResource = createResource(table.getCatalogName(),
+                table.getSchemaTableName().getSchemaName(),
+                table.getSchemaTableName().getTableName(), Optional.of(columnName));
+        return rangerPrestoResource;
+    }
 
   private static List<RangerPrestoResource> createResource(CatalogSchemaTableName table, Set<String> columns) {
     List<RangerPrestoResource> colRequests = new ArrayList<>();
